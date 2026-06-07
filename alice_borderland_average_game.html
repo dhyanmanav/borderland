@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CONSENSUS — Four of Diamonds</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --gold: #d4a94a;
+      --gold-dim: #7a5c1e;
+      --gold-glow: rgba(212, 169, 74, 0.18);
+      --red: #c94040;
+      --green: #3a8a4a;
+      --bg: #080808;
+      --bg2: #0f0f0f;
+      --bg3: #161616;
+      --border: #1e1e1e;
+      --border2: #2a2a2a;
+      --text: #ddd8cc;
+      --text-dim: #6a5a48;
+      --text-muted: #3a3028;
+    }
+
+    html,
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* SCANLINE OVERLAY */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg,
+          transparent 0px,
+          transparent 3px,
+          rgba(0, 0, 0, 0.06) 3px,
+          rgba(0, 0, 0, 0.06) 4px);
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* BACKGROUND GRID */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(212, 169, 74, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212, 169, 74, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    .site-header {
+      text-align: center;
+      padding: 32px 16px 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+
+    .suit-line {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 5px;
+      color: var(--gold-dim);
+      margin-bottom: 6px;
+    }
+
+    .site-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(48px, 10vw, 80px);
+      color: var(--gold);
+      line-height: 1;
+      letter-spacing: 6px;
+      text-shadow: 0 0 60px var(--gold-glow), 0 0 120px var(--gold-glow);
+    }
+
+    .site-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 3px;
+      margin-top: 8px;
+    }
+
+    /* SCREENS */
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fadeUp 0.4s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* PANEL */
+    .panel {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .panel-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    /* FORM ELEMENTS */
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .field input[type="text"],
+    .field input[type="number"] {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 2px;
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus {
+      border-color: var(--gold-dim);
+    }
+
+    .field input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 520px) {
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* BUTTONS */
+    .btn {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 11px 24px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--text);
+    }
+
+    .btn:hover {
+      background: var(--bg3);
+      border-color: var(--text-dim);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .btn-gold {
+      border-color: var(--gold-dim);
+      color: var(--gold);
+      background: rgba(212, 169, 74, 0.05);
+    }
+
+    .btn-gold:hover {
+      background: rgba(212, 169, 74, 0.12);
+      border-color: var(--gold);
+    }
+
+    .btn-danger {
+      border-color: #4a1a1a;
+      color: var(--red);
+      background: rgba(201, 64, 64, 0.05);
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    .btn-lg {
+      font-size: 17px;
+      padding: 14px 28px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    /* ROOM CODE DISPLAY */
+    .room-code-big {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(40px, 10vw, 64px);
+      letter-spacing: 10px;
+      color: var(--gold);
+      text-align: center;
+      padding: 20px;
+      background: rgba(212, 169, 74, 0.04);
+      border: 1px solid rgba(212, 169, 74, 0.15);
+      border-radius: 2px;
+      text-shadow: 0 0 40px var(--gold-glow);
+      margin: 12px 0;
+      cursor: pointer;
+      transition: background 0.2s;
+      word-break: break-all;
+    }
+
+    .room-code-big:hover {
+      background: rgba(212, 169, 74, 0.08);
+    }
+
+    .copy-hint {
+      text-align: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      margin-top: -8px;
+      margin-bottom: 12px;
+    }
+
+    /* PLAYERS GRID */
+    .players-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .player-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--green);
+      border-radius: 2px;
+      padding: 14px;
+      transition: all 0.4s;
+    }
+
+    .player-card.dead {
+      border-left-color: var(--red);
+      opacity: 0.55;
+      filter: grayscale(0.5);
+    }
+
+    .player-card.winning {
+      border-left-color: var(--gold);
+    }
+
+    .player-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .player-name-label {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 1px;
+    }
+
+    .badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      padding: 3px 8px;
+      border-radius: 2px;
+      border: 1px solid var(--border2);
+      color: var(--text-dim);
+      background: var(--bg2);
+    }
+
+    .badge-you {
+      border-color: rgba(212, 169, 74, 0.3);
+      color: var(--gold);
+      background: rgba(212, 169, 74, 0.06);
+    }
+
+    .badge-host {
+      border-color: #2a3a1a;
+      color: #6a9a4a;
+      background: #0a1a0a;
+    }
+
+    .hp-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .hp-bar {
+      flex: 1;
+      height: 3px;
+      background: var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+
+    .hp-fill {
+      height: 100%;
+      background: var(--green);
+      transition: width 0.6s, background 0.6s;
+      border-radius: 1px;
+    }
+
+    .hp-val {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      min-width: 36px;
+      text-align: right;
+    }
+
+    .player-status-text {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--green);
+    }
+
+    .player-status-text.dead {
+      color: var(--red);
+    }
+
+    .player-status-text.gold {
+      color: var(--gold);
+    }
+
+    .player-vote-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      color: var(--gold);
+      line-height: 1;
+      margin-top: 6px;
+    }
+
+    /* VOTING UI */
+    .vote-big-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(72px, 18vw, 110px);
+      color: var(--gold);
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 0 60px var(--gold-glow);
+      margin: 8px 0;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 2px;
+      background: var(--border2);
+      border-radius: 1px;
+      outline: none;
+      margin: 16px 0;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 12px var(--gold-glow);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: -8px;
+    }
+
+    /* RESULT */
+    .result-target {
+      text-align: center;
+      padding: 20px 0 16px;
+    }
+
+    .result-target-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .result-target-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(56px, 14vw, 88px);
+      color: var(--gold);
+      line-height: 1;
+      text-shadow: 0 0 60px var(--gold-glow);
+    }
+
+    .result-breakdown {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .result-stat {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .result-stat-name {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .result-stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 42px;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .result-stat-delta {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .result-stat.win {
+      border-color: rgba(58, 138, 74, 0.4);
+    }
+
+    .result-stat.win .result-stat-num {
+      color: #5adb7a;
+    }
+
+    .result-stat.lose {
+      border-color: rgba(201, 64, 64, 0.3);
+    }
+
+    .result-stat.lose .result-stat-num {
+      color: var(--red);
+    }
+
+    /* RULES */
+    .rules-list {
+      list-style: none;
+    }
+
+    .rules-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--bg3);
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      transition: color 0.4s;
+    }
+
+    .rules-list li:last-child {
+      border-bottom: none;
+    }
+
+    .rules-list li.new-rule {
+      color: var(--gold);
+      animation: flashRule 1s ease;
+    }
+
+    @keyframes flashRule {
+      0% {
+        background: rgba(212, 169, 74, 0.1);
+      }
+
+      100% {
+        background: transparent;
+      }
+    }
+
+    .rule-idx {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--gold-dim);
+      min-width: 28px;
+      padding-top: 3px;
+    }
+
+    /* LOG */
+    .log-area {
+      max-height: 150px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border2) transparent;
+    }
+
+    .log-entry {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--bg3);
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .log-entry.ev-death {
+      color: #c94040bb;
+    }
+
+    .log-entry.ev-rule {
+      color: var(--gold);
+    }
+
+    .log-entry.ev-win {
+      color: #5adb7a;
+    }
+
+    .log-entry.ev-round {
+      color: var(--text-dim);
+    }
+
+    /* WAITING */
+    .waiting-msg {
+      text-align: center;
+      padding: 16px;
+      background: rgba(58, 138, 74, 0.05);
+      border: 1px solid rgba(58, 138, 74, 0.15);
+      border-radius: 2px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      color: var(--green);
+      letter-spacing: 1px;
+    }
+
+    .blink {
+      animation: blink 1.1s infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.2
+      }
+    }
+
+    /* END SCREEN */
+    .end-hero {
+      text-align: center;
+      padding: 50px 24px;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      border-radius: 2px;
+      margin-bottom: 16px;
+    }
+
+    .end-hero-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 5px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .end-hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(56px, 16vw, 100px);
+      line-height: 1;
+      color: var(--gold);
+      text-shadow: 0 0 80px var(--gold-glow);
+    }
+
+    .end-hero-title.lose {
+      color: var(--red);
+      text-shadow: 0 0 80px rgba(201, 64, 64, 0.2);
+    }
+
+    .end-hero-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 10px;
+      letter-spacing: 2px;
+    }
+
+    /* ROUND HEADER */
+    .round-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .round-tag {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      padding: 4px 14px;
+      border: 1px solid var(--gold-dim);
+      border-radius: 2px;
+      background: rgba(212, 169, 74, 0.04);
+    }
+
+    .alive-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+    }
+
+    /* LOBBY PLAYERS */
+    .lobby-player-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--bg3);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .lobby-player-row:last-child {
+      border-bottom: none;
+    }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--bg3);
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      padding: 10px 24px;
+      border-radius: 2px;
+      z-index: 9000;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* DIVIDER */
+    hr.divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 16px 0;
+    }
+
+    /* PHASE BANNER */
+    .phase-banner {
+      text-align: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--gold);
+      padding: 10px;
+      background: rgba(212, 169, 74, 0.04);
+      border: 1px solid rgba(212, 169, 74, 0.12);
+      border-radius: 2px;
+      margin-bottom: 14px;
+    }
+
+    /* UTIL */
+    .mt8 {
+      margin-top: 8px;
+    }
+
+    .mt12 {
+      margin-top: 12px;
+    }
+
+    .mt16 {
+      margin-top: 16px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .text-mono {
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    .text-dim {
+      color: var(--text-dim);
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    /* RESPONSIVE TWEAKS */
+    @media (max-width: 480px) {
+      .app {
+        padding: 10px;
+      }
+
+      .site-header {
+        padding: 20px 10px 18px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      .btn-row {
+        flex-direction: column;
+      }
+
+      .btn-row .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="toast"></div>
+
+  <div class="app">
+    <header class="site-header">
+      <div class="suit-line">♦ &nbsp; FOUR OF DIAMONDS &nbsp; ♦</div>
+      <div class="site-title">CONSENSUS</div>
+      <div class="site-sub">ALICE IN BORDERLAND &mdash; AVERAGE &times; 0.8</div>
+    </header>
+
+    <!-- ═══════════════════ SCREEN: SETUP ═══════════════════ -->
+    <div class="screen active" id="screen-setup">
+      <div class="panel">
+        <div class="panel-label">// Enter the Game</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Your Name</label>
+            <input type="text" id="inp-name" placeholder="e.g. Arisu" maxlength="14" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Room Code (to join)</label>
+            <input type="text" id="inp-room" placeholder="6-char code" maxlength="6" autocomplete="off"
+              style="text-transform:uppercase; letter-spacing:4px;" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-gold btn-lg" onclick="createRoom()">Create Room</button>
+          <button class="btn btn-lg" onclick="joinRoom()">Join Room</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">// Rules of Survival</div>
+        <ul class="rules-list">
+          <li><span class="rule-idx">[01]</span> Submit any number between 0 and 100.</li>
+          <li><span class="rule-idx">[02]</span> The average of all submissions is multiplied by 0.8.</li>
+          <li><span class="rule-idx">[03]</span> The player closest to this result wins the round.</li>
+          <li><span class="rule-idx">[04]</span> The loser of each round loses 5 HP.</li>
+          <li><span class="rule-idx">[05]</span> Reach 0 HP and you are eliminated. Last alive wins.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SCREEN: LOBBY ═══════════════════ -->
+    <div class="screen" id="screen-lobby">
+      <div class="panel">
+        <div class="panel-label">// Room Code — Tap to Copy</div>
+        <div class="room-code-big" id="room-code-display" onclick="copyCode()">——————</div>
+        <div class="copy-hint">TAP THE CODE TO COPY &amp; SHARE WITH OPPONENT</div>
+        <div class="text-dim text-center" id="lobby-status-msg">Waiting for opponent to join...</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">// Players in Room</div>
+        <div id="lobby-players"></div>
+        <hr class="divider" />
+        <div id="start-area">
+          <button class="btn btn-gold btn-full btn-lg" id="start-btn" onclick="startGame()" style="display:none;">
+            Start Game
+          </button>
+          <div class="text-dim text-center" id="start-hint">Need at least 2 players to start.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SCREEN: GAME ═══════════════════ -->
+    <div class="screen" id="screen-game">
+      <div class="round-header">
+        <div class="round-tag" id="round-label">ROUND 1</div>
+        <div class="alive-tag" id="alive-tag">— ALIVE</div>
+      </div>
+
+      <div class="players-grid" id="players-area"></div>
+
+      <!-- VOTING -->
+      <div class="panel mt12" id="voting-section">
+        <div class="panel-label">// Submit Your Number</div>
+        <div class="vote-big-num" id="vote-display">50</div>
+        <input type="range" min="0" max="100" value="50" id="vote-slider"
+          oninput="document.getElementById('vote-display').textContent=this.value" />
+        <div class="range-labels"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+        <button class="btn btn-gold btn-full btn-lg mt16" id="vote-btn" onclick="submitVote()">Lock In</button>
+      </div>
+
+      <!-- WAITING -->
+      <div class="waiting-msg mt12" id="waiting-section" style="display:none;">
+        ✓ NUMBER LOCKED — <span class="blink">WAITING FOR OTHERS</span>
+      </div>
+
+      <!-- RESULT -->
+      <div class="panel mt12" id="result-section" style="display:none;">
+        <div class="panel-label">// Round Result</div>
+        <div class="result-target">
+          <div class="result-target-label">TARGET NUMBER</div>
+          <div class="result-target-num" id="result-target-num">—</div>
+        </div>
+        <div class="result-breakdown" id="result-breakdown"></div>
+        <div class="text-center mt16">
+          <button class="btn btn-gold btn-lg" id="next-round-btn" style="display:none;" onclick="nextRound()">
+            Next Round →
+          </button>
+        </div>
+      </div>
+
+      <!-- LIVE RULES -->
+      <div class="panel mt12">
+        <div class="panel-label">// Active Rules</div>
+        <ul class="rules-list" id="live-rules"></ul>
+      </div>
+
+      <!-- LOG -->
+      <div class="panel mt12">
+        <div class="panel-label">// Game Log</div>
+        <div class="log-area" id="game-log"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SCREEN: END ═══════════════════ -->
+    <div class="screen" id="screen-end">
+      <div class="end-hero">
+        <div class="end-hero-label">GAME OVER</div>
+        <div class="end-hero-title" id="end-title">—</div>
+        <div class="end-hero-sub" id="end-sub">—</div>
+        <button class="btn btn-gold btn-lg" style="margin-top:28px;" onclick="resetGame()">Play Again</button>
+      </div>
+      <div class="panel">
+        <div class="panel-label">// Final Rules Unlocked This Game</div>
+        <ul class="rules-list" id="end-rules"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════
+    //  SUPABASE CONFIG — fill these in
+    // ═══════════════════════════════════════════
+    const SUPABASE_URL = 'https://mjveknbspgqrcclxlmya.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_W1VJFJzpAqsvjNBphmZ-cg_bRiYxNB4';
+
+    // ═══════════════════════════════════════════
+    //  STATE
+    // ═══════════════════════════════════════════
+    let myName = '';
+    let myRoom = '';
+    let isHost = false;
+    let pollTimer = null;
+
+    const POLL_MS = 1400;
+
+    const EXTRA_RULES = [
+      "Ties are broken by whoever submitted first.",
+      "You may not submit the same number two rounds in a row.",
+      "The winner of the previous round must submit within 10 seconds or forfeits.",
+      "The valid range is now 0–80. Submissions above 80 are invalid.",
+      "If the gap between winner and loser exceeds 25, the loser loses 10 HP this round.",
+      "The multiplier drops from 0.8 to 0.75 for this round only.",
+      "Any player below 30 HP may declare a truce — both skip a round with no HP loss.",
+      "The loser must reveal their strategy before the next round begins.",
+      "A player who wins 3 consecutive rounds earns immunity for one round.",
+      "The loser of this round also loses their vote history — past submissions wiped.",
+    ];
+
+    // ═══════════════════════════════════════════
+    //  SUPABASE REST HELPERS
+    // ═══════════════════════════════════════════
+    async function readRoom(code) {
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/game_rooms?code=eq.${encodeURIComponent(code)}&select=state`,
+          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+        );
+        const rows = await res.json();
+        return rows.length ? rows[0].state : null;
+      } catch (e) { console.error('readRoom', e); return null; }
+    }
+
+    async function writeRoom(code, state) {
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/game_rooms`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify({ code, state, updated_at: new Date().toISOString() })
+        });
+      } catch (e) { console.error('writeRoom', e); }
+    }
+
+    // ═══════════════════════════════════════════
+    //  UTILS
+    // ═══════════════════════════════════════════
+    function genCode() {
+      return Math.random().toString(36).substr(2, 6).toUpperCase();
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2200);
+    }
+
+    function copyCode() {
+      navigator.clipboard.writeText(myRoom).then(() => toast('ROOM CODE COPIED ✓'));
+    }
+
+    function startPoll(fn) {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(fn, POLL_MS);
+      fn();
+    }
+
+    function stopPoll() {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    }
+
+    // ═══════════════════════════════════════════
+    //  INITIAL STATE
+    // ═══════════════════════════════════════════
+    function makeInitialState(code, hostName) {
+      return {
+        code, phase: 'lobby', round: 0,
+        players: [{ name: hostName, hp: 100, alive: true }],
+        votes: {}, results: null,
+        rules: [
+          "Submit a number between 0 and 100.",
+          "Average × 0.8 = the target number.",
+          "Closest to the target wins the round.",
+          "Loser loses 5 HP per round. Eliminated at 0 HP.",
+          "Last player alive wins the game."
+        ],
+        extraUsed: [],
+        log: [`[ROOM] Game room ${code} created.`],
+        hostName,
+        winner: null
+      };
+    }
+
+    // ═══════════════════════════════════════════
+    //  SETUP ACTIONS
+    // ═══════════════════════════════════════════
+    async function createRoom() {
+      const name = document.getElementById('inp-name').value.trim();
+      if (!name) { toast('ENTER YOUR NAME FIRST'); return; }
+      const code = genCode();
+      myName = name; myRoom = code; isHost = true;
+      const state = makeInitialState(code, name);
+      await writeRoom(code, state);
+      document.getElementById('room-code-display').textContent = code;
+      showScreen('screen-lobby');
+      startPoll(lobbyPoll);
+    }
+
+    async function joinRoom() {
+      const name = document.getElementById('inp-name').value.trim();
+      const code = document.getElementById('inp-room').value.trim().toUpperCase();
+      if (!name) { toast('ENTER YOUR NAME FIRST'); return; }
+      if (code.length < 4) { toast('ENTER A VALID ROOM CODE'); return; }
+      const room = await readRoom(code);
+      if (!room) { toast('ROOM NOT FOUND'); return; }
+      if (room.phase !== 'lobby') { toast('GAME ALREADY IN PROGRESS'); return; }
+      myName = name; myRoom = code; isHost = false;
+      if (!room.players.find(p => p.name === name)) {
+        room.players.push({ name, hp: 100, alive: true });
+        room.log.push(`[JOIN] ${name} entered the game.`);
+        await writeRoom(code, room);
+      }
+      document.getElementById('room-code-display').textContent = code;
+      showScreen('screen-lobby');
+      startPoll(lobbyPoll);
+    }
+
+    // ═══════════════════════════════════════════
+    //  LOBBY
+    // ═══════════════════════════════════════════
+    async function lobbyPoll() {
+      const room = await readRoom(myRoom);
+      if (!room) return;
+      renderLobbyPlayers(room);
+      if (room.phase === 'playing') {
+        stopPoll();
+        enterGame(room);
+      }
+    }
+
+    function renderLobbyPlayers(room) {
+      const el = document.getElementById('lobby-players');
+      el.innerHTML = room.players.map(p => `
+    <div class="lobby-player-row">
+      <span>${p.name}</span>
+      <span>
+        ${p.name === myName ? '<span class="badge badge-you">YOU</span>' : ''}
+        ${p.name === room.hostName ? '<span class="badge badge-host ml4">HOST</span>' : ''}
+      </span>
+    </div>`).join('');
+
+      const startBtn = document.getElementById('start-btn');
+      const startHint = document.getElementById('start-hint');
+      if (isHost) {
+        if (room.players.length >= 2) {
+          startBtn.style.display = 'block';
+          startHint.style.display = 'none';
+        } else {
+          startHint.textContent = 'Waiting for opponent to join...';
+        }
+      } else {
+        startHint.textContent = `Waiting for ${room.hostName} to start...`;
+      }
+    }
+
+    async function startGame() {
+      const room = await readRoom(myRoom);
+      if (!room) return;
+      room.phase = 'playing';
+      room.round = 1;
+      room.votes = {};
+      room.log.push('[START] Game begins. Good luck.');
+      await writeRoom(myRoom, room);
+      stopPoll();
+      enterGame(room);
+    }
+
+    // ═══════════════════════════════════════════
+    //  GAME ENTER / POLL
+    // ═══════════════════════════════════════════
+    function enterGame(room) {
+      showScreen('screen-game');
+      renderGame(room);
+      startPoll(gamePoll);
+    }
+
+    async function gamePoll() {
+      const room = await readRoom(myRoom);
+      if (!room) return;
+      renderGame(room);
+      if (room.winner) {
+        stopPoll();
+        setTimeout(() => showEnd(room), 2400);
+      }
+    }
+
+    // ═══════════════════════════════════════════
+    //  RENDER GAME
+    // ═══════════════════════════════════════════
+    function renderGame(room) {
+      document.getElementById('round-label').textContent = `ROUND ${room.round}`;
+      const alive = room.players.filter(p => p.alive);
+      document.getElementById('alive-tag').textContent = `${alive.length} ALIVE`;
+
+      renderPlayers(room);
+      renderLiveRules(room);
+      renderLog(room);
+
+      const myPlayer = room.players.find(p => p.name === myName);
+      const myVoted = room.votes && room.votes[myName] !== undefined;
+      const allVoted = alive.every(p => room.votes && room.votes[p.name] !== undefined);
+
+      const voteSec = document.getElementById('voting-section');
+      const waitSec = document.getElementById('waiting-section');
+      const resultSec = document.getElementById('result-section');
+      const nextBtn = document.getElementById('next-round-btn');
+
+      if (room.results && room.results.round === room.round) {
+        voteSec.style.display = 'none';
+        waitSec.style.display = 'none';
+        resultSec.style.display = 'block';
+        showResult(room);
+        nextBtn.style.display = (isHost && !room.winner) ? 'inline-block' : 'none';
+      } else if (!myPlayer || !myPlayer.alive) {
+        voteSec.style.display = 'none';
+        waitSec.style.display = 'none';
+        resultSec.style.display = 'none';
+      } else if (myVoted) {
+        voteSec.style.display = 'none';
+        waitSec.style.display = 'block';
+        resultSec.style.display = 'none';
+      } else {
+        voteSec.style.display = 'block';
+        waitSec.style.display = 'none';
+        resultSec.style.display = 'none';
+        document.getElementById('vote-btn').disabled = false;
+      }
+
+      if (allVoted && !room.results && isHost) {
+        computeAndSaveResults(room);
+      }
+    }
+
+    // ═══════════════════════════════════════════
+    //  RENDER PLAYERS
+    // ═══════════════════════════════════════════
+    function renderPlayers(room) {
+      const area = document.getElementById('players-area');
+      const isResult = room.results && room.results.round === room.round;
+      area.innerHTML = room.players.map(p => {
+        const hpPct = Math.max(0, p.hp);
+        const hpColor = hpPct > 50 ? 'var(--green)' : hpPct > 20 ? '#8a6a1a' : 'var(--red)';
+        const voted = room.votes && room.votes[p.name] !== undefined;
+        const isWinner = isResult && room.results.winner === p.name;
+        const isLoser = isResult && room.results.loser === p.name;
+        const cardClass = !p.alive ? 'dead' : isWinner ? 'winning' : '';
+        const statusText = !p.alive ? 'ELIMINATED' : isWinner ? 'WINNER ✓' : isLoser ? 'LOSER ✗' : voted ? 'VOTED' : 'THINKING...';
+        const statusClass = !p.alive ? 'dead' : isWinner ? 'gold' : '';
+        const voteShowNum = isResult && room.votes && room.votes[p.name] !== undefined;
+
+        return `<div class="player-card ${cardClass}">
+      <div class="player-top">
+        <div class="player-name-label">${p.name}</div>
+        <span class="badge ${p.name === myName ? 'badge-you' : ''}">${p.name === myName ? 'YOU' : 'PLAYER'}</span>
+      </div>
+      <div class="hp-row">
+        <div class="hp-bar"><div class="hp-fill" style="width:${hpPct}%;background:${hpColor};"></div></div>
+        <span class="hp-val">${p.hp} HP</span>
+      </div>
+      <div class="player-status-text ${statusClass}">${statusText}</div>
+      ${voteShowNum ? `<div class="player-vote-num">${room.votes[p.name]}</div>` : ''}
+    </div>`;
+      }).join('');
+    }
+
+    // ═══════════════════════════════════════════
+    //  COMPUTE RESULTS (host only)
+    // ═══════════════════════════════════════════
+    async function computeAndSaveResults(room) {
+      const alive = room.players.filter(p => p.alive);
+      const votes = alive.map(p => ({ name: p.name, val: room.votes[p.name] }));
+      const avg = votes.reduce((s, v) => s + v.val, 0) / votes.length;
+      const target = avg * 0.8;
+
+      const diffs = votes.map(v => ({ ...v, diff: Math.abs(v.val - target) }))
+        .sort((a, b) => a.diff - b.diff);
+
+      const winner = diffs[0].name;
+      const loser = diffs[diffs.length - 1].name;
+
+      // apply new rule when someone loses HP (always add one per round for drama)
+      const newRule = pickNewRule(room);
+      if (newRule) {
+        room.extraUsed.push(newRule.idx);
+        room.rules.push(newRule.text);
+        room.log.push(`[NEW RULE] ${newRule.text}`);
+      }
+
+      // damage
+      room.players.forEach(p => {
+        if (p.name === loser && p.alive) {
+          p.hp = Math.max(0, p.hp - 5);
+          if (p.hp === 0) {
+            p.alive = false;
+            room.log.push(`[ELIMINATED] ${p.name} has been eliminated from the game.`);
+          }
+        }
+      });
+
+      room.results = {
+        round: room.round,
+        avg: parseFloat(avg.toFixed(2)),
+        target: parseFloat(target.toFixed(2)),
+        votes,
+        diffs,
+        winner,
+        loser
+      };
+
+      room.log.push(`[R${room.round}] Target: ${target.toFixed(2)} | ${winner} wins (${diffs[0].val}) | ${loser} loses (${diffs[diffs.length - 1].val})`);
+
+      const aliveNow = room.players.filter(p => p.alive);
+      if (aliveNow.length <= 1) {
+        room.winner = aliveNow.length === 1 ? aliveNow[0].name : 'NOBODY';
+        room.phase = 'ended';
+        room.log.push(`[END] ${room.winner} is the last survivor.`);
+      }
+
+      await writeRoom(myRoom, room);
+    }
+
+    function pickNewRule(room) {
+      // Add a new rule every round that has a loser — keeps tension building
+      const available = EXTRA_RULES
+        .map((text, idx) => ({ text, idx }))
+        .filter(r => !room.extraUsed.includes(r.idx));
+      if (!available.length) return null;
+      return available[Math.floor(Math.random() * available.length)];
+    }
+
+    // ═══════════════════════════════════════════
+    //  SHOW RESULT
+    // ═══════════════════════════════════════════
+    function showResult(room) {
+      const r = room.results;
+      document.getElementById('result-target-num').textContent = r.target.toFixed(2);
+
+      document.getElementById('result-breakdown').innerHTML = r.diffs.map(d => {
+        const isWin = d.name === r.winner;
+        const isLose = d.name === r.loser;
+        const cls = isWin ? 'win' : isLose ? 'lose' : '';
+        return `<div class="result-stat ${cls}">
+      <div class="result-stat-name">${d.name}${d.name === myName ? ' (YOU)' : ''}</div>
+      <div class="result-stat-num">${d.val}</div>
+      <div class="result-stat-delta">Δ ${d.diff.toFixed(2)} &nbsp; ${isWin ? '✓ WIN' : isLose ? '✗ LOSE' : ''}</div>
+    </div>`;
+      }).join('');
+    }
+
+    // ═══════════════════════════════════════════
+    //  VOTE SUBMIT
+    // ═══════════════════════════════════════════
+    async function submitVote() {
+      const val = parseInt(document.getElementById('vote-slider').value);
+      const room = await readRoom(myRoom);
+      if (!room) return;
+      if (room.votes && room.votes[myName] !== undefined) return;
+      room.votes[myName] = val;
+      room.log.push(`[VOTE] ${myName} submitted a number.`);
+      await writeRoom(myRoom, room);
+      document.getElementById('vote-btn').disabled = true;
+      document.getElementById('voting-section').style.display = 'none';
+      document.getElementById('waiting-section').style.display = 'block';
+    }
+
+    // ═══════════════════════════════════════════
+    //  NEXT ROUND
+    // ═══════════════════════════════════════════
+    async function nextRound() {
+      const room = await readRoom(myRoom);
+      if (!room) return;
+      room.round += 1;
+      room.votes = {};
+      room.results = null;
+      room.log.push(`[ROUND ${room.round}] New round started.`);
+      await writeRoom(myRoom, room);
+      document.getElementById('vote-slider').value = 50;
+      document.getElementById('vote-display').textContent = '50';
+      document.getElementById('result-section').style.display = 'none';
+      document.getElementById('voting-section').style.display = 'block';
+      document.getElementById('vote-btn').disabled = false;
+    }
+
+    // ═══════════════════════════════════════════
+    //  RENDER RULES & LOG
+    // ═══════════════════════════════════════════
+    function renderLiveRules(room) {
+      const el = document.getElementById('live-rules');
+      el.innerHTML = room.rules.map((r, i) => `
+    <li class="${i >= 5 ? 'new-rule' : ''}">
+      <span class="rule-idx">[${String(i + 1).padStart(2, '0')}]</span>${r}
+    </li>`).join('');
+    }
+
+    function renderLog(room) {
+      const el = document.getElementById('game-log');
+      el.innerHTML = [...(room.log || [])].reverse().slice(0, 24).map(e => {
+        let cls = '';
+        if (e.includes('[ELIMINATED]')) cls = 'ev-death';
+        else if (e.includes('[NEW RULE]')) cls = 'ev-rule';
+        else if (e.includes('[END]')) cls = 'ev-win';
+        else if (e.includes('[ROUND]') || e.includes('[START]')) cls = 'ev-round';
+        return `<div class="log-entry ${cls}">${e}</div>`;
+      }).join('');
+    }
+
+    // ═══════════════════════════════════════════
+    //  END SCREEN
+    // ═══════════════════════════════════════════
+    function showEnd(room) {
+      stopPoll();
+      showScreen('screen-end');
+      const iWin = room.winner === myName;
+      const titleEl = document.getElementById('end-title');
+      titleEl.textContent = iWin ? 'YOU SURVIVED' : 'YOU DIED';
+      titleEl.className = 'end-hero-title' + (iWin ? '' : ' lose');
+      document.getElementById('end-sub').textContent =
+        `${room.winner} wins the game after ${room.round} rounds.`;
+
+      const endRules = document.getElementById('end-rules');
+      endRules.innerHTML = room.rules.map((r, i) => `
+    <li class="${i >= 5 ? 'new-rule' : ''}">
+      <span class="rule-idx">[${String(i + 1).padStart(2, '0')}]</span>${r}
+    </li>`).join('');
+    }
+
+    // ═══════════════════════════════════════════
+    //  RESET
+    // ═══════════════════════════════════════════
+    function resetGame() {
+      stopPoll();
+      myName = ''; myRoom = ''; isHost = false;
+      document.getElementById('inp-name').value = '';
+      document.getElementById('inp-room').value = '';
+      showScreen('screen-setup');
+    }
+  </script>
+</body>
+
+</html>
